@@ -1,0 +1,209 @@
+MainActivity.java
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class MainActivity extends AppCompatActivity {
+    Button login,reg;
+    boolean result;
+    EditText name,pass;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        login=findViewById(R.id.login);
+        reg=findViewById(R.id.register);
+        name=findViewById(R.id.name);
+        pass=findViewById(R.id.pass);
+
+        sqldb db=new sqldb(MainActivity.this);
+
+        reg.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                result=db.addUser(name.getText().toString(),pass.getText().toString());
+                if (result)
+                    Toast.makeText(MainActivity.this,"Registration Done Successfully",Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(MainActivity.this,"Some Error Occured while Registering",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                result = db.getData(name.getText().toString(), pass.getText().toString());
+                if (result)
+                {       Intent i = new Intent(MainActivity.this, IndexActivity.class);
+                startActivity(i);
+            }
+                else{
+                    Toast.makeText(MainActivity.this,"Invalid Credential",Toast.LENGTH_SHORT).show();
+
+                }
+
+            }
+        });
+    }
+}
+IndexActivity.java
+mport androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Bundle;
+
+public class IndexActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_index);
+    }
+}
+sqldb.java
+package com.example.labfive;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+
+public class sqldb extends SQLiteOpenHelper {
+final static String DB="User",TABLE="users";
+    public sqldb(MainActivity mainActivity) {
+        super(mainActivity,DB,null,1);
+    }
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        String query="CREATE TABLE "+TABLE+"(username TEXT ,password TEXT)";
+        db.execSQL(query);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+
+    }
+
+    public boolean addUser(String name,String pass){
+        SQLiteDatabase db=this.getWritableDatabase();
+        ContentValues cv=new ContentValues();
+        cv.put("username",name);
+        cv.put("password",pass);
+        if (db.insert(TABLE,null,cv)==-1){
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
+
+
+    public boolean getData(String username,String password) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cr = db.rawQuery("select * from "+TABLE+" where username='" + username + "' and  password=='"+password+"'", null);
+        if (cr.getCount() == 0) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+Acitvity_
+main.xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login Portal!"
+        android:textSize="34sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.119" />
+
+    <EditText
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text"
+        android:hint="Enter Username"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="127dp"
+        tools:layout_editor_absoluteY="407dp" />
+
+    <EditText
+        android:id="@+id/pass"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="text"
+android:hint="Enter password"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.547"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.335" />
+
+    <Button
+        android:id="@+id/login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.815"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.79" />
+
+    <Button
+        android:id="@+id/register"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Register"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.814" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+Index_main.xml
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".IndexActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Successfully Signed In"
+        android:textSize="34sp"
+        tools:layout_editor_absoluteX="36dp"
+        tools:layout_editor_absoluteY="162dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>
